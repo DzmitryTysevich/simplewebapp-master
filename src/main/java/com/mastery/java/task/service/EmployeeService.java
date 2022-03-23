@@ -2,83 +2,105 @@ package com.mastery.java.task.service;
 
 import com.mastery.java.task.dao.EmployeeDao;
 import com.mastery.java.task.dto.Employee;
-import com.mastery.java.task.utils.EmployeeUtil;
-import org.springframework.http.HttpStatus;
+import com.mastery.java.task.exceptions.EmployeeHasBeenFoundException;
+import com.mastery.java.task.exceptions.EmployeeNotFoundsException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.springframework.web.server.ResponseStatusException;
 
-import static com.mastery.java.task.constants.Constant.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+import java.util.Optional;
+
+import static com.mastery.java.task.constants.Constant.FOUND;
+import static com.mastery.java.task.constants.Constant.NOT_FOUND;
 
 @Service
 public class EmployeeService {
+    private static final Logger logger = LoggerFactory.getLogger(EmployeeService.class);
     private final EmployeeDao employeeDao;
-    private final EmployeeUtil employeeUtil;
 
-    public EmployeeService(EmployeeDao employeeDao, EmployeeUtil employeeUtil) {
+    @Autowired
+    public EmployeeService(EmployeeDao employeeDao) {
         this.employeeDao = employeeDao;
-        this.employeeUtil = employeeUtil;
     }
 
-    public EmployeeDao getEmployeeDao() {
-        return employeeDao;
+    public List<Employee> findAllEmployee() {
+        Iterable<Employee> employees = employeeDao.findAll();
+        logger.info("Searching for employees...");
+        return new ArrayList<>((Collection<Employee>) employees);
     }
 
-    public Employee putEmployee(String firstName, String lastName, Integer departmentId, String jobTitle, Integer gender, String dateOfBirth) {
-        Employee employee;
-        if (!isaEmployeeExists(firstName, lastName, dateOfBirth)) {
-            employee = new Employee(
-                    firstName.toUpperCase(),
-                    lastName.toUpperCase(),
-                    departmentId,
-                    jobTitle.toUpperCase(),
-                    employeeUtil.getGenderFromIndex(gender),
-                    employeeUtil.getDateOfBirthFromString(dateOfBirth));
-            employeeDao.save(employee);
-        } else {
-            throw new ResponseStatusException(HttpStatus.CONFLICT, firstName + SPACE + lastName + CREATED_YES);
-        }
-        return employee;
-    }
-
-    public Employee updateEmployee(Integer ID, String firstName, String lastName, Integer departmentId,
-                                   String jobTitle, Integer gender, String dateOfBirth) {
-        Employee updatedEmployee;
+    public Employee findEmployeeById(Integer ID) {
+        Optional<Employee> employee = employeeDao.findById(ID);
         if (employeeDao.existsById(ID)) {
-            updatedEmployee = employeeDao.findEmployeeByID(ID);
+            logger.info("Searching for employee by ID...");
+            return employee.orElse(null);
         } else {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, CREATED_NO);
+            throw new EmployeeNotFoundsException(NOT_FOUND);
         }
-
-        if (isNotNull(firstName, updatedEmployee)) {
-            updatedEmployee.setFirstName(firstName.toUpperCase());
-        }
-        if (isNotNull(lastName, updatedEmployee)) {
-            updatedEmployee.setLastName(lastName.toUpperCase());
-        }
-        if (isNotNull(departmentId, updatedEmployee)) {
-            updatedEmployee.setDepartmentId(departmentId);
-        }
-        if (isNotNull(jobTitle, updatedEmployee)) {
-            updatedEmployee.setJobTitle(jobTitle.toUpperCase());
-        }
-        if (isNotNull(gender, updatedEmployee)) {
-            updatedEmployee.setGender(employeeUtil.getGenderFromIndex(gender));
-        }
-        if (isNotNull(dateOfBirth, updatedEmployee)) {
-            updatedEmployee.setDateOfBirth(employeeUtil.getDateOfBirthFromString(dateOfBirth));
-        }
-        return updatedEmployee;
     }
 
-    private boolean isaEmployeeExists(String firstName, String lastName, String dateOfBirth) {
+    public List<Employee> findEmployeeByFirstNameAndLastName(String firstName, String lastName) {
+        if (firstName != null && lastName != null) {
+            logger.info("Searching for employee by names...");
+            return employeeDao.findEmployeesByFirstNameAndLastName(firstName.toUpperCase(), lastName.toUpperCase());
+        } else {
+            logger.warn("Enter first name and last name");
+            return findAllEmployee();
+        }
+    }
+
+    public void deleteEmployee(Integer ID) {
+        if (employeeDao.existsById(ID)) {
+            employeeDao.delete(findEmployeeById(ID));
+            logger.info("Employee was deleted");
+        } else {
+            throw new EmployeeNotFoundsException(NOT_FOUND);
+        }
+    }
+
+    public Employee updateEmployee(Employee employee) {
+        if (employeeDao.existsById(employee.getID())) {
+            logger.info("Employee was updated");
+            return employeeDao.save(new Employee(
+                    employee.getID(),
+                    employee.getFirstName().toUpperCase(),
+                    employee.getLastName().toUpperCase(),
+                    employee.getDepartmentId(),
+                    employee.getJobTitle().toUpperCase(),
+                    employee.getGender(),
+                    employee.getDateOfBirth()
+            ));
+        } else {
+            throw new EmployeeNotFoundsException(NOT_FOUND);
+        }
+    }
+
+    public Employee postEmployee(Employee employee) {
+        if (!isaEmployeeExistsByNamesAndDateOfBirth(employee) && !employeeDao.existsById(employee.getID())) {
+            logger.info("Employee was added");
+            return employeeDao.save(new Employee(
+                    employee.getID(),
+                    employee.getFirstName().toUpperCase(),
+                    employee.getLastName().toUpperCase(),
+                    employee.getDepartmentId(),
+                    employee.getJobTitle().toUpperCase(),
+                    employee.getGender(),
+                    employee.getDateOfBirth()
+            ));
+        } else {
+            throw new EmployeeHasBeenFoundException(FOUND);
+        }
+    }
+
+    private boolean isaEmployeeExistsByNamesAndDateOfBirth(Employee employee) {
         return employeeDao.existsEmployeeByFirstNameAndLastNameAndDateOfBirth(
-                firstName.toUpperCase(),
-                lastName.toUpperCase(),
-                employeeUtil.getDateOfBirthFromString(dateOfBirth)
+                employee.getFirstName().toUpperCase(),
+                employee.getLastName().toUpperCase(),
+                employee.getDateOfBirth()
         );
-    }
-
-    private boolean isNotNull(Object object, Employee updatedEmployee) {
-        return object != null && updatedEmployee != null;
     }
 }

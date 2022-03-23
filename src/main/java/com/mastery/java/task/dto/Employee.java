@@ -1,29 +1,46 @@
 package com.mastery.java.task.dto;
 
+import com.mastery.java.task.annotations.Adult;
+
 import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
 import javax.persistence.Id;
+import javax.validation.constraints.NotNull;
 import java.time.LocalDate;
 import java.util.Objects;
 
 @Entity
 public class Employee {
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @NotNull
     private Integer ID;
 
     private String firstName;
     private String lastName;
+
+    @NotNull
     private Integer departmentId;
+
     private String jobTitle;
+
+    @Enumerated(value = EnumType.STRING)
     private Gender gender;
+
+    @Adult
     private LocalDate dateOfBirth;
 
     public Employee() {
     }
 
-    public Employee(String firstName, String lastName, Integer departmentId, String jobTitle, Gender gender, LocalDate dateOfBirth) {
+    public Employee(Integer ID,
+                    String firstName,
+                    String lastName,
+                    Integer departmentId,
+                    String jobTitle,
+                    Gender gender,
+                    LocalDate dateOfBirth) {
+        this.ID = ID;
         this.firstName = firstName;
         this.lastName = lastName;
         this.departmentId = departmentId;

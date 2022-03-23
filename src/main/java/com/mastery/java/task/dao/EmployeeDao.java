@@ -9,7 +9,6 @@ import java.util.List;
 
 @Repository
 public interface EmployeeDao extends CrudRepository<Employee, Integer> {
-    Employee findEmployeeByID(Integer ID);
 
     List<Employee> findEmployeesByFirstNameAndLastName(String firstName, String lastName);
 
