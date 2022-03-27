@@ -1,57 +1,18 @@
 package com.mastery.java.task.rest;
 
 import com.mastery.java.task.dto.Employee;
-import com.mastery.java.task.service.EmployeeService;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.MediaType;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
 
-import javax.validation.Valid;
 import java.util.List;
+import java.util.Optional;
 
-import static com.mastery.java.task.constants.Constant.FIRST_NAME;
-import static com.mastery.java.task.constants.Constant.LAST_NAME;
+public interface EmployeeController {
+    Optional<Employee> getEmployeeByID(Integer ID);
 
-@RestController
-@RequestMapping("/employees")
-public class EmployeeController {
-    private final EmployeeService employeeService;
+    List<Employee> getEmployeeByFirstNameAndLastName(String firstName, String lastName);
 
-    @Autowired
-    public EmployeeController(EmployeeService employeeService) {
-        this.employeeService = employeeService;
-    }
+    Optional<Employee> updateEmployee(Employee employee);
 
-    @GetMapping(value = "/{ID}", produces = MediaType.APPLICATION_JSON_VALUE)
-    public Employee getEmployeeByID(@PathVariable Integer ID) {
-        return employeeService.findEmployeeById(ID);
-    }
+    Optional<Employee> postEmployee(Employee employee);
 
-    @GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
-    public List<Employee> getEmployeeByFirstNameAndLastName(@RequestParam(name = FIRST_NAME, required = false) String firstName,
-                                                            @RequestParam(name = LAST_NAME, required = false) String lastName) {
-        return employeeService.findEmployeeByFirstNameAndLastName(firstName, lastName);
-    }
-
-    @PutMapping(consumes = MediaType.APPLICATION_JSON_VALUE)
-    public Employee updateEmployee(@Valid @RequestBody Employee employee) {
-        return employeeService.updateEmployee(employee);
-    }
-
-    @PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE)
-    public Employee postEmployee(@Valid @RequestBody Employee employee) {
-        return employeeService.postEmployee(employee);
-    }
-
-    @PostMapping(value = "/{ID}")
-    public void deleteEmployee(@PathVariable Integer ID) {
-        employeeService.deleteEmployee(ID);
-    }
+    void deleteEmployee(Integer ID);
 }

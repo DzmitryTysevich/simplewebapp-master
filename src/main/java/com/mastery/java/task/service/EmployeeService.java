@@ -33,11 +33,11 @@ public class EmployeeService {
         return new ArrayList<>((Collection<Employee>) employees);
     }
 
-    public Employee findEmployeeById(Integer ID) {
+    public Optional<Employee> findEmployeeById(Integer ID) {
         Optional<Employee> employee = employeeDao.findById(ID);
         if (employeeDao.existsById(ID)) {
             logger.info("Searching for employee by ID...");
-            return employee.orElse(null);
+            return employee;
         } else {
             throw new EmployeeNotFoundsException(NOT_FOUND);
         }
@@ -46,26 +46,29 @@ public class EmployeeService {
     public List<Employee> findEmployeeByFirstNameAndLastName(String firstName, String lastName) {
         if (firstName != null && lastName != null) {
             logger.info("Searching for employee by names...");
-            return employeeDao.findEmployeesByFirstNameAndLastName(firstName.toUpperCase(), lastName.toUpperCase());
+            List<Employee> employeeList = employeeDao.findEmployeesByFirstNameAndLastName(firstName.toUpperCase(), lastName.toUpperCase());
+            if (employeeList.isEmpty()) {
+                throw new EmployeeNotFoundsException(NOT_FOUND);
+            } else return employeeList;
         } else {
             logger.warn("Enter first name and last name");
             return findAllEmployee();
         }
     }
 
-    public void deleteEmployee(Integer ID) {
+    public void deleteEmployeeById(Integer ID) {
         if (employeeDao.existsById(ID)) {
-            employeeDao.delete(findEmployeeById(ID));
+            employeeDao.deleteById(ID);
             logger.info("Employee was deleted");
         } else {
             throw new EmployeeNotFoundsException(NOT_FOUND);
         }
     }
 
-    public Employee updateEmployee(Employee employee) {
+    public Optional<Employee> updateEmployee(Employee employee) {
         if (employeeDao.existsById(employee.getID())) {
             logger.info("Employee was updated");
-            return employeeDao.save(new Employee(
+            return Optional.of(employeeDao.save(new Employee(
                     employee.getID(),
                     employee.getFirstName().toUpperCase(),
                     employee.getLastName().toUpperCase(),
@@ -73,16 +76,16 @@ public class EmployeeService {
                     employee.getJobTitle().toUpperCase(),
                     employee.getGender(),
                     employee.getDateOfBirth()
-            ));
+            )));
         } else {
             throw new EmployeeNotFoundsException(NOT_FOUND);
         }
     }
 
-    public Employee postEmployee(Employee employee) {
+    public Optional<Employee> postEmployee(Employee employee) {
         if (!isaEmployeeExistsByNamesAndDateOfBirth(employee) && !employeeDao.existsById(employee.getID())) {
             logger.info("Employee was added");
-            return employeeDao.save(new Employee(
+            return Optional.of(employeeDao.save(new Employee(
                     employee.getID(),
                     employee.getFirstName().toUpperCase(),
                     employee.getLastName().toUpperCase(),
@@ -90,7 +93,7 @@ public class EmployeeService {
                     employee.getJobTitle().toUpperCase(),
                     employee.getGender(),
                     employee.getDateOfBirth()
-            ));
+            )));
         } else {
             throw new EmployeeHasBeenFoundException(FOUND);
         }

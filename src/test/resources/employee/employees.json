@@ -1,0 +1,56 @@
+[
+  {
+    "firstName": "IVAN",
+    "lastName": "IVANOU",
+    "departmentId": 1,
+    "jobTitle": "MANAGER",
+    "gender": "MALE",
+    "dateOfBirth": "1981-05-01",
+    "id": 1
+  },
+  {
+    "firstName": "DZMITRY",
+    "lastName": "PIATROU",
+    "departmentId": 1,
+    "jobTitle": "SALES",
+    "gender": "MALE",
+    "dateOfBirth": "1987-12-01",
+    "id": 2
+  },
+  {
+    "firstName": "SARA",
+    "lastName": "CONOR",
+    "departmentId": 2,
+    "jobTitle": "MANAGER",
+    "gender": "FEMALE",
+    "dateOfBirth": "1999-05-10",
+    "id": 3
+  },
+  {
+    "firstName": "RAMAN",
+    "lastName": "SIDARAU",
+    "departmentId": 2,
+    "jobTitle": "CLERK",
+    "gender": "MALE",
+    "dateOfBirth": "1985-05-02",
+    "id": 4
+  },
+  {
+    "firstName": "PIOTR",
+    "lastName": "VOLODIN",
+    "departmentId": 1,
+    "jobTitle": "CLERK",
+    "gender": "MALE",
+    "dateOfBirth": "1998-05-04",
+    "id": 5
+  },
+  {
+    "firstName": "SARA",
+    "lastName": "CONOR",
+    "departmentId": 1,
+    "jobTitle": "SALES",
+    "gender": "FEMALE",
+    "dateOfBirth": "1990-01-20",
+    "id": 6
+  }
+]

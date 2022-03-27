@@ -1,5 +1,10 @@
 package com.mastery.java.task.dto;
 
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.mastery.java.task.annotations.Adult;
 
 import javax.persistence.Entity;
@@ -7,7 +12,11 @@ import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
 import javax.persistence.Id;
 import javax.validation.constraints.NotNull;
+import java.io.File;
+import java.io.IOException;
+import java.io.StringWriter;
 import java.time.LocalDate;
+import java.util.List;
 import java.util.Objects;
 
 @Entity
@@ -130,5 +139,50 @@ public class Employee {
                 ", gender=" + gender +
                 ", dateOfBirth=" + dateOfBirth +
                 '}';
+    }
+
+    public static class Parser {
+        private static final ObjectMapper mapper = new ObjectMapper();
+
+        static {
+            mapper.configure(SerializationFeature.INDENT_OUTPUT, true);
+            mapper.registerModule(new JavaTimeModule());
+            mapper.configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false);
+            mapper.configure(DeserializationFeature.FAIL_ON_MISSING_CREATOR_PROPERTIES, false);
+        }
+
+        public static String toJson(Employee user) {
+            try {
+                final StringWriter writer = new StringWriter();
+                mapper.writeValue(writer, user);
+                return writer.toString();
+            } catch (IOException exc) {
+                throw new RuntimeException(exc);
+            }
+        }
+
+        public static Employee parseJson(String json) {
+            try {
+                return mapper.readValue(json, Employee.class);
+            } catch (IOException exc) {
+                throw new RuntimeException(exc);
+            }
+        }
+
+        public static Employee parseJson(File file) {
+            try {
+                return mapper.readValue(file, Employee.class);
+            } catch (IOException exc) {
+                throw new RuntimeException(exc);
+            }
+        }
+
+        public static List<Employee> parseJsonToList(File file) {
+            try {
+                return mapper.readValue(file, new TypeReference<List<Employee>>() {});
+            } catch (IOException exc) {
+                throw new RuntimeException(exc);
+            }
+        }
     }
 }
